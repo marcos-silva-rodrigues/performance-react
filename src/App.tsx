@@ -1,24 +1,61 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { useState, useMemo, useCallback } from "react";
+import { Item } from "./components/Item";
 
 function App() {
+  const [items, setItems] = useState<string[]>([]);
+  const [wishList, setWishList] = useState<string[]>([]);
+  const [newItem, setNewItem] = useState("");
+
+  function addItemToList() {
+    setItems([...items, `Item: ${items.length}`]);
+    setNewItem("");
+  }
+
+  /**
+   * Evitar fica recriando a referencia da função de acordo com o
+   * array de dependencias
+   */
+  const addItemToWishList = useCallback((item: string) => {
+    setWishList((state) => [...state, item]);
+  }, []);
+
+  // function addItemToWishList(item: string) {
+  //   setWishList(state => [...state, item]);
+  // }
+
+  /**
+   * Executa apenas se os valores do array de dependencia mudar
+   */
+  const countItemWithOne = useMemo(() => {
+    console.log("render function");
+    const count = items.filter((item) => item.includes("1")).length;
+    return { count };
+  }, [items]);
+
+  // const countItemWithOne = {
+  //   count: items.filter((item) => item.includes("1")).length,
+  // }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <input
+        type="text"
+        onChange={(e) => setNewItem(e.target.value)}
+        value={newItem}
+      />
+      <button onClick={addItemToList}>add</button>
+      <ul>
+        {items.map((item) => {
+          return (
+            <Item
+              key={item}
+              title={item}
+              addItemToWishList={addItemToWishList}
+              countItemWithOne={countItemWithOne}
+            />
+          );
+        })}
+      </ul>
     </div>
   );
 }
